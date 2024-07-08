@@ -464,11 +464,19 @@ impl LanguageServer {
 
             if let Ok(message) = std::str::from_utf8(&buffer) {
                 log::trace!("incoming stderr message:{message}");
+                let mut stderr_capture_locked = stderr_capture.lock();
                 for handler in io_handlers.lock().values_mut() {
+                    if let Some(stderr) = stderr_capture_locked.as_mut() {
+                        for line in stderr.lines() {
+                            handler(IoKind::StdErr, line);
+                        }
+                        stderr_capture_locked.take();
+                    }
+
                     handler(IoKind::StdErr, message);
                 }
 
-                if let Some(stderr) = stderr_capture.lock().as_mut() {
+                if let Some(stderr) = stderr_capture_locked.as_mut() {
                     stderr.push_str(message);
                 }
             }

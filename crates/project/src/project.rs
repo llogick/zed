@@ -3352,7 +3352,7 @@ impl Project {
 
                 match result {
                     Ok(server) => {
-                        stderr_capture.lock().take();
+                        // stderr_capture.lock().take();
                         server
                     }
 
